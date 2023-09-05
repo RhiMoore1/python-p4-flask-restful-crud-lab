@@ -41,11 +41,49 @@ class Plants(Resource):
 api.add_resource(Plants, '/plants')
 
 
+# Flask application in app.py returns JSON representing updated Plant object with "is_in_stock" = False at "/plants/<int:id>".
+# Flask application in app.py returns JSON representing updated Plant object at "/plants/<int:id>".
 class PlantByID(Resource):
 
     def get(self, id):
         plant = Plant.query.filter_by(id=id).first().to_dict()
         return make_response(jsonify(plant), 200)
+
+
+    def patch(self, id):
+        data = request.get_json()
+        plant = Plant.query.filter_by(id=id).first()
+
+        for attr in data:
+            setattr(plant, attr, data[attr])
+
+        db.session.add(plant)
+        db.session.commit()
+
+        response_dict = plant.to_dict()
+
+        response = make_response(
+            response_dict,
+            200
+        )
+        return response
+
+
+
+
+    def delete(self, id):
+        plant = Plant.query.filter_by(id=id).first()
+
+        db.session.delete(plant)
+        db.session.commit()
+
+        response = make_response(
+            '', 
+            204
+        )
+
+        return response
+
 
 
 api.add_resource(PlantByID, '/plants/<int:id>')
